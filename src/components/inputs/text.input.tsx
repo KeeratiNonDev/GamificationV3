@@ -1,6 +1,6 @@
 import { Input } from "antd";
 import { useController } from "react-hook-form";
-import { FormHelper } from "../helpers/form.helper";
+import { FormHelper } from "../../helpers/form.helper";
 import { TBaseFormField, BaseFormField } from "./base.input";
 
 type InputFormFieldProps = TBaseFormField & {
@@ -10,6 +10,7 @@ type InputFormFieldProps = TBaseFormField & {
   disabled?: boolean;
   transform?: (value: string) => string;
   readOnly?: boolean;
+  addonBefore?: string;
 };
 
 export function InputFormField({
@@ -34,6 +35,7 @@ export function InputFormField({
         onBlur={field.onBlur}
         readOnly={readOnly}
         disabled={disabled || field.disabled}
+        addonBefore={props.addonBefore}
       />
     </BaseFormField>
   );

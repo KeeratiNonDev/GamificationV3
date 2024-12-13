@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.5.2",
     "@hookform/resolvers": "^3.9.1",
     "@sinclair/typebox": "^0.34.9",
     "ajv": "^8.17.1",
@@ -16,9 +17,10 @@
     "ajv-formats": "^3.0.1",
     "antd": "^5.22.3",
     "dayjs": "^1.11.13",
-    "next": "15.0.3",
-    "react": "19.0.0-rc-66855b96-20241106",
-    "react-dom": "19.0.0-rc-66855b96-20241106",
+    "nanoid": "^5.0.9",
+    "next": "14.2.13",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2"
   },
   "devDependencies": {
