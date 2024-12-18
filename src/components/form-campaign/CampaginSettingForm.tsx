@@ -1,7 +1,7 @@
 "use client";
 import { AnySchema } from "ajv";
 import { FormProvider, useForm } from "react-hook-form";
-import { Game } from "@/game-list";
+import { Game } from "../game-list";
 import { Button, message, Skeleton, Tabs } from "antd";
 import { showValidationErrorNotification } from "@/hooks/useValidationErrorNotification";
 import { InputFormField } from "@/components/inputs/text.input";
@@ -18,12 +18,15 @@ import SwitchFormField from "../inputs/switch.form.field";
 import { updateMockData } from "../../actions/campaign";
 import { nanoid } from "nanoid";
 import { LanguageProvider } from "../../context/LanguageContext";
+import PageSetting from "./PageSetting";
 
 export type TTimeline = {
   general: any;
   credit: any;
   redeem: any;
+  limitation: any;
   game: any;
+  pageSetting: any;
 };
 
 export type TSchema = {
@@ -127,8 +130,8 @@ export const SCHEMA: AnySchema = {
                 minLength: 1,
                 errorMessage: "Type is required",
               },
-              value: { type: "number" },
-              total: { type: "number" },
+              value: { type: "number", minimum: 0, errorMessage: "Value must not be less than 0" },
+              total: { type: "number", minimum: 0, errorMessage: "Total must not be less than 0" },
               isActive: { type: "boolean" },
             },
             required: ["tierIds", "type", "value", "total", "isActive"],
@@ -202,8 +205,16 @@ export const SCHEMA: AnySchema = {
                   properties: {
                     giftId: { type: "number" },
                     limitPerUser: { type: "number" },
-                    min: { type: "number" },
-                    max: { type: "number" },
+                    min: {
+                      type: "number",
+                      minimum: 0,
+                      errorMessage: "Min must not be less than 0",
+                    },
+                    max: {
+                      type: "number",
+                      minimum: 0,
+                      errorMessage: "Max must not be less than 0",
+                    },
                     unlimit: { type: "boolean" },
                   },
                   required: ["giftId", "limitPerUser", "min", "max"],
@@ -212,6 +223,38 @@ export const SCHEMA: AnySchema = {
             },
             required: ["id", "name", "giftShelf"],
           },
+        },
+        limitation: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              tierIds: {
+                type: "array",
+                items: {
+                  type: "number",
+                },
+              },
+              scopeLimit: {
+                type: "string",
+                minLength: 1,
+                errorMessage: "Scope limit is required",
+              },
+              playLimitBy: {
+                type: "string",
+                minLength: 1,
+                errorMessage: "Play limit by is required",
+              },
+              quota: { type: "number", minimum: 0, errorMessage: "quota must not be less than 0" },
+              isActive: { type: "boolean" },
+            },
+            required: ["tierIds", "scopeLimit", "playLimitBy", "quota", "isActive"],
+            additionalProperties: false,
+          },
+        },
+        pageSetting: {
+          type: "object",
+          additionalProperties: true,
         },
       },
       required: [],
@@ -238,6 +281,7 @@ export const SCHEMA: AnySchema = {
 export function CampaginSettingForm() {
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [activeTabKey, setActiveTabKey] = useState("1");
 
   const { id } = useParams();
   const router = useRouter();
@@ -318,12 +362,7 @@ export function CampaginSettingForm() {
   );
 
   const handleBackClick = () => {
-    // if (isTimelineEditing) {
-    //   setTimelineId("");
-    //   setIsTimelineEditing(false);
-    // } else {
     router.back();
-    // }
   };
 
   const handleCreateNewTimeline = () => {
@@ -412,6 +451,8 @@ export function CampaginSettingForm() {
                 <div className="p-6 flex flex-col gap-6">
                   <div>
                     <Tabs
+                      activeKey={activeTabKey}
+                      onChange={(key) => setActiveTabKey(key)}
                       items={[
                         {
                           key: "1",
@@ -425,13 +466,20 @@ export function CampaginSettingForm() {
                             />
                           ),
                         },
+                        {
+                          key: "2",
+                          label: "PageSetting",
+                          children: <PageSetting prefix="properties.defaults.view" />,
+                        },
                       ]}
                       destroyInactiveTabPane={true}
                     />
                   </div>
-                  <Button onClick={handleCreateNewTimeline}>
-                    Create New Timeline
-                  </Button>
+                  {activeTabKey === "1" && (
+                    <Button onClick={handleCreateNewTimeline}>
+                      Create New Timeline
+                    </Button>
+                  )}
                 </div>
               </div>
               {timelineId && isTimelineEditing && (

@@ -3,7 +3,6 @@ import { useDataContext } from "../../context/DataContext";
 import {
   Button,
   Checkbox,
-  Input,
   InputNumber,
   message,
   Modal,
@@ -80,8 +79,9 @@ const schema: AnySchema = {
         properties: {
           giftId: { type: "number" },
           limitPerUser: { type: "number" },
-          min: { type: "number" },
-          max: { type: "number" },
+          min: { type: "number", minimum: 0, errorMessage: "Min must not be less than 0" },
+          max: { type: "number", minimum: 0, errorMessage: "Max must not be less than 0" },
+          isActive: { type: "boolean"},
           unlimit: { type: "boolean" },
         },
         required: ["giftId", "limitPerUser", "min", "max"],
@@ -117,7 +117,6 @@ const RedeemSetting = (props: RedeemSettingProps) => {
   const [editData, setEditData] = useState<RedeemItem | null>(null);
 
   const [stateBasket, setStateBasket] = useState(null);
-  const [selectedRows, setSelectedRows] = useState<Record<number, boolean>>({});
 
   const { getValues, setValue, watch } = useFormContext();
   const dataContext = useDataContext();
@@ -178,6 +177,16 @@ const RedeemSetting = (props: RedeemSettingProps) => {
     setEditStatus(false);
     setStateBasket(null);
     setShowModal(true);
+    form.reset({
+      id: String(nanoid()),
+      name: "",
+      giftShelf: undefined,
+      normal: [],
+      sequence: [],
+      setGiftScore: [],
+      remark: "",
+      isActive: false,
+    })
   };
 
   const handleEdit = (index: number) => {
@@ -209,12 +218,63 @@ const RedeemSetting = (props: RedeemSettingProps) => {
       },
     });
   };
+   
+  const validateMinMaxOverlap = (setGiftScore: any[]) => {
+    const errors: Record<string, string> = {};
+  
+    setGiftScore.forEach((item, index) => {
+      if (item.max !== 0 && item.min >= item.max) {
+        errors[`setGiftScore[${index}].min`] = "Min must be less than Max.";
+        errors[`setGiftScore[${index}].max`] = "Max must be greater than Min.";
+      }
+    });
+  
+    setGiftScore.forEach((current, currentIndex) => {
+      setGiftScore.forEach((other, otherIndex) => {
+        if (currentIndex !== otherIndex) {
+          if (
+            current.max > 0 &&
+            other.max > 0 &&
+            !(current.max < other.min || current.min > other.max)
+          ) {
+            errors[`setGiftScore[${currentIndex}].min`] = `Min and Max overlap with row ${otherIndex + 1}`;
+            errors[`setGiftScore[${otherIndex}].max`] = `Min and Max overlap with row ${currentIndex + 1}`;
+          }
+
+          if (
+            current.unlimit &&
+            !(other.max < current.min || other.min > current.min)
+          ) {
+            errors[`setGiftScore[${currentIndex}].min`] = `Row ${currentIndex + 1} overlaps with row ${otherIndex + 1}`;
+          }
+
+          if (
+            other.unlimit &&
+            !(current.max < other.min || current.min > other.min)
+          ) {
+            errors[`setGiftScore[${otherIndex}].min`] = `Row ${otherIndex + 1} overlaps with row ${currentIndex + 1}`;
+          }
+        }
+      });
+    });
+  
+    return errors;
+  };  
 
   const handleModalOk = form.handleSubmit(
     (values) => {
-      const filteredSetGiftScore = values.setGiftScore.filter(
-        (_: any, index: number) => selectedRows[index]
-      );
+      const overlapErrors = validateMinMaxOverlap(values.setGiftScore);
+
+    if (Object.keys(overlapErrors).length > 0) {
+      Object.entries(overlapErrors).forEach(([field, message]) => {
+        form.setError(field, {
+          type: "overlap",
+          message,
+        });
+      });
+      message.error("Please fix the overlap issues before saving.");
+      return;
+    }
 
       const arrayBasket = getValues(`${props.prefix}`);
       const existingIndex = arrayBasket.findIndex(
@@ -224,15 +284,9 @@ const RedeemSetting = (props: RedeemSettingProps) => {
       let updatedBaskets;
       if (existingIndex !== -1) {
         updatedBaskets = [...arrayBasket];
-        updatedBaskets[existingIndex] = {
-          ...values,
-          setGiftScore: filteredSetGiftScore,
-        };
+        updatedBaskets[existingIndex] = values;
       } else {
-        updatedBaskets = [
-          { ...values, setGiftScore: filteredSetGiftScore },
-          ...arrayBasket,
-        ];
+        updatedBaskets = [values, ...arrayBasket];
       }
 
       setValue(props.prefix, updatedBaskets);
@@ -254,7 +308,6 @@ const RedeemSetting = (props: RedeemSettingProps) => {
     setShowModal(false);
     setEditStatus(false);
     setIndexbasket(null);
-    setSelectedRows({});
   };
 
   const basketOption = useMemo(() => {
@@ -305,8 +358,6 @@ const RedeemSetting = (props: RedeemSettingProps) => {
       ? form.setValue("normal", mappedNormal)
       : form.setValue("setGiftScore", mappedSetGiftScore);
   };
-
-  console.log(form.watch("setGiftScore"));
 
   return (
     <div className="flex flex-col gap-4">
@@ -524,20 +575,13 @@ const RedeemSetting = (props: RedeemSettingProps) => {
                     ]
                   : [
                       {
-                        title: "",
-                        dataIndex: "checkbox",
-                        key: "checkbox",
+                        title: "Status",
+                        dataIndex: "isActive",
+                        key: "isActive",
                         render: (_, record: any, index: number) => {
                           return (
-                            <Checkbox
-                              checked={selectedRows[index]}
-                              onChange={(e) => {
-                                const checked = e.target.checked;
-                                setSelectedRows((prev) => ({
-                                  ...prev,
-                                  [index]: checked,
-                                }));
-                              }}
+                            <SwitchFormField
+                              name={`setGiftScore[${index}].isActive`}
                             />
                           );
                         },
@@ -557,11 +601,12 @@ const RedeemSetting = (props: RedeemSettingProps) => {
                         dataIndex: "min",
                         key: "min",
                         render: (_, record: any, index: number) => {
+                          const status = form.watch(`setGiftScore[${index}].isActive`)
                           return (
                             <NumberFormField
                               defaultValue={0}
                               name={`setGiftScore[${index}].min`}
-                              disabled={!selectedRows[index]}
+                              disabled={!status}
                             />
                           );
                         },
@@ -575,13 +620,15 @@ const RedeemSetting = (props: RedeemSettingProps) => {
                             `setGiftScore[${index}].unlimit`
                           );
 
+                          const status = form.watch(`setGiftScore[${index}].isActive`)
+
                           return (
                             <>
                               {!unlimit ? (
                                 <NumberFormField
                                   defaultValue={0}
                                   name={`setGiftScore[${index}].max`}
-                                  disabled={unlimit || !selectedRows[index]}
+                                  disabled={unlimit || !status}
                                 />
                               ) : (
                                 <InputNumber disabled />
@@ -595,6 +642,7 @@ const RedeemSetting = (props: RedeemSettingProps) => {
                         dataIndex: "unlimit",
                         key: "unlimit",
                         render: (_, record: any, index: number) => {
+                          const status = form.watch(`setGiftScore[${index}].isActive`)
                           return (
                             <div className="flex gap-4">
                               <CheckboxFormField
@@ -607,7 +655,7 @@ const RedeemSetting = (props: RedeemSettingProps) => {
                                     );
                                   }
                                 }}
-                                disabled={!selectedRows[index]}
+                                disabled={!status}
                               />
                               <h1>Unlimit</h1>
                             </div>
@@ -619,6 +667,7 @@ const RedeemSetting = (props: RedeemSettingProps) => {
               dataSource={stateBasket || []}
               rowKey={(record) => record.id}
               loading={loading}
+              pagination={false}
             />
           </div>
         </FormProvider>

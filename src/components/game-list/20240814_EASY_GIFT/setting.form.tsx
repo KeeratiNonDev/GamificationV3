@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 
-import { InputFormField } from "../../components/inputs/text.input";
+import { InputFormField } from "../../inputs/text.input";
 import {
   Button,
   Divider,
@@ -21,66 +21,10 @@ import { Static, Type } from "@sinclair/typebox";
 import { schemaResolver } from "@/utils/schema.validator";
 import { useDataContext } from "@/context/DataContext";
 import { useParams } from "next/navigation";
-import { LanguageProvider, useLanguage } from "@/context/LanguageContext";
+import { useLanguage } from "@/context/LanguageContext";
 import { LanguageDropdown } from "@/components/form-campaign/LanguageDropDown";
 
-// type GiftSchemaType = {
-//   id: string;
-//   title: string;
-//   description: string;
-//   position: string;
-//   startTime: string;
-//   closeTime: string;
-//   isActive: boolean;
-//   announcementStatus: boolean;
-//   announcementContent: string | undefined;
-//   announcementDate: string | undefined;
-// };
-
-// export const schema: JSONSchemaType<GiftSchemaType> = {
-//   type: "object",
-//   properties: {
-//     id: { type: 'string', },
-//     title: { $ref: "#/definitions/inputString" },
-//     description: { $ref: "#/definitions/inputString" },
-//     position: { $ref: "#/definitions/inputString" },
-//     startTime: { $ref: "#/definitions/dateTime" },
-//     closeTime: { $ref: "#/definitions/dateTime" },
-//     isActive: { $ref: "#/definitions/booleanStatus"},
-//     announcementStatus: { $ref: "#/definitions/booleanStatus" },
-//     announcementContent: { $ref: "#/definitions/inputString" },
-//     announcementDate: { $ref: "#/definitions/dateTime" },
-//   },
-//   required: [
-//     "id",
-//     "title",
-//     "description",
-//     "position",
-//     "startTime",
-//     "closeTime",
-//     "isActive",
-//     "announcementStatus",
-//   ],
-//   additionalProperties: true,
-//   definitions: {
-//     inputString: {
-//       type: "string",
-//       minLength: 1,
-//       errorMessage: "Invalid Input",
-//     },
-//     dateTime: {
-//       type: "string",
-//       format: "date-time",
-//       errorMessage: "Invalid date-time format.",
-//     },
-//     booleanStatus: {
-//       type: "boolean",
-//       default: false,
-//     },
-//   },
-// };
-
-export const GiftSchema = Type.Object({
+export const schema = Type.Object({
   id: Type.String(),
   title: Type.Record(
     Type.String(),
@@ -118,7 +62,7 @@ export const GiftSchema = Type.Object({
   ),
 });
 
-export type GiftSchemaType = Static<typeof GiftSchema>;
+export type GiftSchemaType = Static<typeof schema>;
 
 type SettingFormWithParentProps = {
   prefix: string;
@@ -169,7 +113,7 @@ export const SettingForm = (props: SettingFormProps) => {
       announcementContent: {},
       announcementDate: undefined,
     },
-    resolver: schemaResolver(GiftSchema),
+    resolver: schemaResolver(schema),
   });
 
   useEffect(() => {
@@ -345,7 +289,7 @@ export const SettingForm = (props: SettingFormProps) => {
 
   const showDeleteConfirm = (index: number) => {
     Modal.confirm({
-      title: "Delete this timeline?",
+      title: "Delete this gift?",
       okText: "Delete",
       okType: "danger",
       cancelText: "Cancel",

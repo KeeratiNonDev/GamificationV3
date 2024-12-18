@@ -8,22 +8,15 @@ import { showValidationErrorNotification } from "../../hooks/useValidationErrorN
 import { AnySchema } from "ajv";
 import { TTimeline } from "./CampaginSettingForm";
 import { useSearchParams } from "next/navigation";
-import { Game } from "../../game-list";
+import { Game } from "../game-list";
 import { schemaResolver } from "../../utils/schema.validator";
 import { LanguageProvider } from "../../context/LanguageContext";
 import { nanoid } from "nanoid";
 import dayjs from "dayjs";
 import RedeemSetting from "./RedeemSetting";
 import CreditPage from "./CreditPage";
-
-// interface TimelineForm {
-//   general: {
-//     name: string;
-//     startTime: string;
-//     closeTime: string;
-//   };
-//   game: any
-// }
+import LimitationPage from "./LimitationPage";
+import PageSetting from "./PageSetting";
 
 interface TimelineEditorProps {
   timeline: TTimeline;
@@ -75,8 +68,8 @@ const TIMELINE_SCHEMA: AnySchema = {
             minLength: 1,
             errorMessage: "Type is required",
           },
-          value: { type: "number" },
-          total: { type: "number" },
+          value: { type: "number", minimum: 0, errorMessage: "Value must not be less than 0" },
+          total: { type: "number", minimum: 0, errorMessage: "Total must not be less than 0" },
           isActive: { type: "boolean" },
         },
         required: ["tierIds", "type", "value", "total", "isActive"],
@@ -144,8 +137,8 @@ const TIMELINE_SCHEMA: AnySchema = {
               properties: {
                 giftId: { type: "number" },
                 limitPerUser: { type: "number" },
-                min: { type: "number" },
-                max: { type: "number" },
+                min: { type: "number", minimum: 0, errorMessage: "Min must not be less than 0" },
+                max: { type: "number", minimum: 0, errorMessage: "Max must not be less than 0" },
                 unlimit: { type: "boolean" },
               },
               required: ["giftId", "limitPerUser", "min", "max"],
@@ -154,6 +147,38 @@ const TIMELINE_SCHEMA: AnySchema = {
         },
         required: ["id", "name", "giftShelf"],
       },
+    },
+    limitation: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          tierIds: {
+            type: "array",
+            items: {
+              type: "number",
+            },
+          },
+          scopeLimit: {
+            type: "string",
+            minLength: 1,
+            errorMessage: "Scope limit is required",
+          },
+          playLimitBy: {
+            type: "string",
+            minLength: 1,
+            errorMessage: "Play limit by is required",
+          },
+          quota: { type: "number", minimum: 0, errorMessage: "quota must not be less than 0" },
+          isActive: { type: "boolean" },
+        },
+        required: ["tierIds", "scopeLimit", "playLimitBy", "quota", "isActive"],
+        additionalProperties: false,
+      },
+    },
+    pageSetting: {
+      type: "object",
+      additionalProperties: true,
     },
   },
   required: [],
@@ -193,9 +218,11 @@ const TimelineEditor = (props: TimelineEditorProps) => {
           props.timeline?.general?.closeTime ||
           dayjs().endOf("day").toISOString(),
       },
-      credit: props.timeline?.credit,
-      redeem: props.timeline?.redeem,
+      credit: props.timeline?.credit || [],
+      redeem: props.timeline?.redeem || [],
+      limitation: props.timeline?.limitation || [],
       game: props.timeline?.game,
+      pageSetting: props.timeline?.pageSetting || {},
     },
     resolver: schemaResolver(TIMELINE_SCHEMA, [schema]),
   });
@@ -233,6 +260,12 @@ const TimelineEditor = (props: TimelineEditorProps) => {
           onCancel={handleModalCancel}
           width={1200}
           centered={true}
+          styles={{
+            body: {
+              maxHeight: "65vh",
+              overflowY: "auto",
+            },
+          }}
         >
           <div className="p-6 h-[65dvh]">
             <Tabs
@@ -256,6 +289,16 @@ const TimelineEditor = (props: TimelineEditorProps) => {
                   key: "3",
                   label: "Credit",
                   children: <CreditPage prefix={`credit`} />,
+                },
+                {
+                  key: "5",
+                  label: "Limitation",
+                  children: <LimitationPage prefix={`limitation`} />,
+                },
+                {
+                  key: "6",
+                  label: "Page Setting",
+                  children: <PageSetting prefix={`pageSetting`} />,
                 },
                 {
                   key: "7",

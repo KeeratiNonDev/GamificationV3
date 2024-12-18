@@ -15,7 +15,6 @@ interface CreditPageProps {
 const CreditPage = ({ prefix }: CreditPageProps) => {
   const [tierList, setTierList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [editStatus, setEditStatus] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
   const [tierListModal, setTierListModal] = useState<{ key: number; title: string }[]>([]);
@@ -66,7 +65,6 @@ const CreditPage = ({ prefix }: CreditPageProps) => {
   const handleEdit = (index: number) => {
     setIndexTier(index);
     setShowModal(true);
-    setEditStatus(true);
 
     const currentValues = watch(`${prefix}[${index}].tierIds`);
     setTargetKeys(currentValues || []);
@@ -77,13 +75,12 @@ const CreditPage = ({ prefix }: CreditPageProps) => {
     const newValues = currentValues.filter((_:any, i:any) => i!== index);
     setValue(`${prefix}`, newValues);
     setShowModal(false);
-    setEditStatus(false);
     setIndexTier(null);
   };
 
   const showDeleteConfirm = (index: number) => {
     Modal.confirm({
-      title: "Delete this Basket?",
+      title: "Delete this credit?",
       okText: "Delete",
       okType: "danger",
       cancelText: "Cancel",
@@ -264,7 +261,7 @@ const CreditPage = ({ prefix }: CreditPageProps) => {
         />
       </div>
       <Modal
-        title="Credit List"
+        title="Tier List"
         open={showModal}
         onOk={handleModalOk}
         onCancel={handleModalCancel}

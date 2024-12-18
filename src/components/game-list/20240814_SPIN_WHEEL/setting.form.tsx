@@ -6,14 +6,8 @@ import {
   useFormContext,
   useWatch,
 } from "react-hook-form";
-
-import { Default } from "@sinclair/typebox/value";
-import { InputFormField } from "../../components/inputs/text.input";
+import { InputFormField } from "../../inputs/text.input";
 import { useDataContext } from "@/context/DataContext";
-
-import { ajvResolver } from "@hookform/resolvers/ajv";
-import { fullFormats } from "ajv-formats/dist/formats";
-import { JSONSchemaType } from "ajv";
 import { schemaResolver } from "@/utils/schema.validator";
 import SelectFormField from "@/components/inputs/select.form.field";
 import { LanguageDropdown } from "@/components/form-campaign/LanguageDropDown";
@@ -54,11 +48,11 @@ export const schema = Type.Object({
   basketId: Type.Optional(Type.Number()),
 });
 
-type TSchema = Static<typeof schema>;
+type SpinWheelSchema = Static<typeof schema>;
 
 type SettingFormProps = {
-  value: TSchema;
-  onChange?: (value: TSchema) => void;
+  value: SpinWheelSchema;
+  onChange?: (value: SpinWheelSchema) => void;
 };
 
 export const SettingForm = (props: SettingFormProps) => {
@@ -97,7 +91,7 @@ export const SettingForm = (props: SettingFormProps) => {
 
   const giftList = useMemo(() => {
     const basketId = form.watch("basketId");
-    const selectedBasket = baskets.find((basket) => basket.id === basketId);
+    const selectedBasket = baskets.find((basket) => basket.id === Number(basketId));
     if (!selectedBasket) return [];
 
     return selectedBasket.items.map((item) => ({
@@ -105,8 +99,6 @@ export const SettingForm = (props: SettingFormProps) => {
       value: item.id,
     }));
   }, [baskets, form.watch("basketId")]);
-
-    console.log(giftList)
 
   const basketOption = useMemo(() => {
     return baskets.map((basket) => ({
