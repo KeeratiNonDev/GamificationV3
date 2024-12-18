@@ -1,5 +1,5 @@
 import React from "react";
-import { Game } from "../../game-list";
+import { Game } from "../game-list";
 import { useSearchParams } from "next/navigation";
 import { useFormContext } from "react-hook-form";
 

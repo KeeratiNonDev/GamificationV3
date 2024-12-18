@@ -421,6 +421,7 @@ export const MockCampaign = [
                   limitPerUser: 0,
                   min: 0,
                   max: 0,
+                  isActive: false,
                   unlimit: false
                 },
                 {
@@ -428,6 +429,7 @@ export const MockCampaign = [
                   limitPerUser: 0,
                   min: 0,
                   max: 0,
+                  isActive: false,
                   unlimit: false
                 },
                 {
@@ -435,6 +437,7 @@ export const MockCampaign = [
                   limitPerUser: 0,
                   min: 0,
                   max: 0,
+                  isActive: false,
                   unlimit: false
                 },
                 {
@@ -442,6 +445,7 @@ export const MockCampaign = [
                   limitPerUser: 0,
                   min: 0,
                   max: 0,
+                  isActive: false,
                   unlimit: false
                 },
                 {
@@ -449,6 +453,7 @@ export const MockCampaign = [
                   limitPerUser: 0,
                   min: 0,
                   max: 0,
+                  isActive: false,
                   unlimit: false
                 },
                 {
@@ -456,6 +461,7 @@ export const MockCampaign = [
                   limitPerUser: 0,
                   min: 0,
                   max: 0,
+                  isActive: false,
                   unlimit: false
                 },
               ],
@@ -471,6 +477,25 @@ export const MockCampaign = [
               setGiftScore: [],
             },
           ],
+          limitation: [
+            {
+              tierIds: [1],
+              isActive:true,
+              scopeLimit: "campaign",
+              playLimitBy: "winner",
+              quota: 2,
+            },
+            {
+              tierIds: [1,2],
+              isActive:false,
+              scopeLimit: "period",
+              playLimitBy: "loser",
+              quota: 3,
+            },
+          ],
+          pageSetting: {
+            landingHeaderImage: { th: "test" }
+          },
           game: {
             giftList: [
               {
@@ -539,6 +564,7 @@ export const MockCampaign = [
     code: "GAMI000000001",
     target: "20240814_SPIN_WHEEL",
     type: "instant",
+    isActive: true,
     properties: {
       defaults: {
         general: {
@@ -574,6 +600,69 @@ export const MockCampaign = [
             id: "spin2",
             isActive: true,
             name: "Spin 2",
+            startTime: "2024-10-23T17:00:00.000Z",
+          },
+        },
+      ],
+    },
+  },
+  {
+    id: 5,
+    title: "Finding Item",
+    channel: "True",
+    startTime: "2024-01-23T17:00:00.000Z",
+    closeTime: "2024-12-30T16:59:59.000Z",
+    code: "GAMI000000003",
+    target: "20240814_FINDING_ITEM",
+    type: "instant",
+    isActive: true,
+    properties: {
+      defaults: {
+        general: {
+          creditMode: "local",
+          redeemType: "sequence",
+        },
+      },
+      timeline: [
+        {
+          general: {
+            closeTime: "2024-11-30T16:59:59.000Z",
+            id: "0iSp64TDoFTnhmL9UflQf",
+            isActive: true,
+            name: "Finding Item 1",
+            startTime: "2024-10-23T17:00:00.000Z",
+          },
+          game: {
+            scenes: [
+              {
+                id: '1',
+                name: 'ห้องครัว',
+                backgroundImage: 'backgroundImage',
+                backgroundColor: 'backgroundColor',
+                ordering: '1',
+                winnerScore: '5',
+                isActive: false,
+                items: []
+              },
+              {
+                id: '2',
+                name: 'ห้องน้ำ',
+                backgroundImage: 'backgroundImage2',
+                backgroundColor: 'backgroundColor2',
+                ordering: '2',
+                winnerScore: '5',
+                isActive: false,
+                items: []
+              },
+            ]
+          },
+        },
+        {
+          general: {
+            closeTime: "2024-11-30T16:59:59.000Z",
+            id: "findingItem2",
+            isActive: true,
+            name: "Finding Item 2",
             startTime: "2024-10-23T17:00:00.000Z",
           },
         },
